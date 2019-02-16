@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head> </head>
+  <body>
+    <script>
+      (function() {
+
+        function calculateReimbursement(cityCost, startDate, endDate) {
+          // set rates, based on cost of city (low vs high)
+          const travelDayRate = cityCost === "low" ? 45 : 55;
+          const fullDayRate = cityCost === "low" ? 75 : 85;
+
+          // First day and last day of a project is a travel day.
+          // Any given day is only ever counted once.
+          if (startDate === endDate) return travelDayRate;
+
+          // find number of full days
+          const numOfFullDays = countNumOfFullDays(startDate, endDate);
+
+          // First day and last day of a project is a travel day.
+          // Any day in the middle of a project is considered a full day.
+          return travelDayRate + fullDayRate * numOfFullDays + travelDayRate;
+        }
+
+        function countNumOfFullDays(startDate, endDate) {
+          // calculate the number of milliseconds in one day
+          const oneDay = 24 * 60 * 60 * 1000;
+
+          // convert dates to milliseconds
+          startDate = new Date(startDate).getTime();
+          endDate = new Date(endDate).getTime();
+
+          // calculate the date difference in milliseconds
+          const dateDifference = Math.abs(startDate - endDate);
+
+          // convert milliseconds back to days, subtracting 1 for end date
+          return Math.round(dateDifference / oneDay) - 1;
+        }
+
+        console.log(calculateReimbursement("low", "9/1/15", "9/1/15"));
+        console.log(calculateReimbursement("low", "9/1/15", "9/2/15"));
+        console.log(calculateReimbursement("low", "9/1/15", "9/3/15"));
+        console.log(calculateReimbursement("low", "9/1/15", "9/4/15"));
+        console.log(calculateReimbursement("high", "9/1/15", "9/1/15"));
+        console.log(calculateReimbursement("high", "9/1/15", "9/2/15"));
+        console.log(calculateReimbursement("high", "9/1/15", "9/3/15"));
+        console.log(calculateReimbursement("high", "9/1/15", "9/4/15"));
+      })();
+    </script>
+  </body>
+</html>
