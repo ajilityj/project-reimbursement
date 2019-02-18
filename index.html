@@ -4,47 +4,124 @@
   <body>
     <script>
       (function() {
+        const set1 = [
+          {
+            cityCost: "low",
+            startDate: "9/1/15",
+            endDate: "9/3/15"
+          }
+        ];
+        const set2 = [
+          {
+            cityCost: "low",
+            startDate: "9/1/15",
+            endDate: "9/1/15"
+          },
+          {
+            cityCost: "high",
+            startDate: "9/2/15",
+            endDate: "9/6/15"
+          },
+          {
+            cityCost: "low",
+            startDate: "9/6/15",
+            endDate: "9/8/15"
+          }
+        ];
+        const set3 = [
+          {
+            cityCost: "low",
+            startDate: "9/1/15",
+            endDate: "9/3/15"
+          },
+          {
+            cityCost: "high",
+            startDate: "9/5/15",
+            endDate: "9/7/15"
+          },
+          {
+            cityCost: "high",
+            startDate: "9/8/15",
+            endDate: "9/8/15"
+          }
+        ];
+        const set4 = [
+          {
+            cityCost: "low",
+            startDate: "9/1/15",
+            endDate: "9/1/15"
+          },
+          {
+            cityCost: "low",
+            startDate: "9/1/15",
+            endDate: "9/1/15"
+          },
+          {
+            cityCost: "high",
+            startDate: "9/2/15",
+            endDate: "9/2/15"
+          },
+          {
+            cityCost: "high",
+            startDate: "9/2/15",
+            endDate: "9/3/15"
+          }
+        ];
 
-        function calculateReimbursement(cityCost, startDate, endDate) {
-          // set rates, based on cost of city (low vs high)
-          const travelDayRate = cityCost === "low" ? 45 : 55;
-          const fullDayRate = cityCost === "low" ? 75 : 85;
+        function calculateReimbursement(set) {
+          // determine number of projects in set
+          const numProjects = set.length;
 
-          // First day and last day of a project is a travel day.
-          // Any given day is only ever counted once.
-          if (startDate === endDate) return travelDayRate;
+          // no projects exist in the set
+          if (!numProjects) return 0;
 
-          // find number of full days
-          const numOfFullDays = countNumOfFullDays(startDate, endDate);
+          // set inital dates to start/end date of first project in set
+          let startDate = set[0].startDate;
+          let endDate = set[0].endDate;
 
-          // First day and last day of a project is a travel day.
-          // Any day in the middle of a project is considered a full day.
-          return travelDayRate + fullDayRate * numOfFullDays + travelDayRate;
+          // only 1 project exists in the set
+          if (numProjects === 1) {
+            // set project rates
+            const travelDayRate = set[0].cityCost === "low" ? 45 : 55;
+            const fullDayRate = set[0].cityCost === "low" ? 75 : 85;
+
+            // return single-day travel rate, if start & end dates match
+            if (startDate === endDate) return travelDayRate;
+
+            // determine num of full days, subtracting 1 for end date
+            const numOfFullDays = countNumOfDays(startDate, endDate) - 1;
+
+            // return single-project reimbursement
+            return travelDayRate * 2 + fullDayRate * numOfFullDays;
+          }
         }
 
-        function countNumOfFullDays(startDate, endDate) {
+        function countNumOfDays(date1, date2) {
           // calculate the number of milliseconds in one day
           const oneDay = 24 * 60 * 60 * 1000;
 
           // convert dates to milliseconds
-          startDate = new Date(startDate).getTime();
-          endDate = new Date(endDate).getTime();
+          date1 = new Date(date1).getTime();
+          date2 = new Date(date2).getTime();
 
           // calculate the date difference in milliseconds
-          const dateDifference = Math.abs(startDate - endDate);
+          const dateDifference = Math.abs(date1 - date2);
 
-          // convert milliseconds back to days, subtracting 1 for end date
-          return Math.round(dateDifference / oneDay) - 1;
+          // convert dateDifference milliseconds back to days
+          const numOfDays = Math.round(dateDifference / oneDay);
+
+          // return number of days between dates
+          return numOfDays;
         }
 
-        console.log(calculateReimbursement("low", "9/1/15", "9/1/15"));
-        console.log(calculateReimbursement("low", "9/1/15", "9/2/15"));
-        console.log(calculateReimbursement("low", "9/1/15", "9/3/15"));
-        console.log(calculateReimbursement("low", "9/1/15", "9/4/15"));
-        console.log(calculateReimbursement("high", "9/1/15", "9/1/15"));
-        console.log(calculateReimbursement("high", "9/1/15", "9/2/15"));
-        console.log(calculateReimbursement("high", "9/1/15", "9/3/15"));
-        console.log(calculateReimbursement("high", "9/1/15", "9/4/15"));
+        console.log('-----');
+        console.log(`Set 1: ${calculateReimbursement(set1)}`);
+        // console.log('-----');
+        // console.log(`Set 2: ${calculateReimbursement(set2)}`);
+        // console.log('-----');
+        // console.log(`Set 3: ${calculateReimbursement(set3)}`);
+        // console.log('-----');
+        // console.log(`Set 4: ${calculateReimbursement(set4)}`);
       })();
     </script>
   </body>
