@@ -105,6 +105,9 @@
         }
 
         function getProjectDatesAndRates(set) {
+          // determine number of projects in set
+          const numProjects = set.length;
+
           let projects = [];
 
           // set inital dates to dates of first project in set
@@ -116,28 +119,28 @@
             setStartDate = compareDates(project.startDate, setStartDate, '<');
             setEndDate = compareDates(project.endDate, setEndDate, '>');
           }
-
+          
           // iterate through each project in the set
-          for (const project of set) {
+          for (let p = 0; p < numProjects; p++) {
             // set project rates
-            const travelDayRate = project.cityCost === "low" ? 45 : 55;
-            const fullDayRate = project.cityCost === "low" ? 75 : 85;
+            const travelDayRate = set[p].cityCost === "low" ? 45 : 55;
+            const fullDayRate = set[p].cityCost === "low" ? 75 : 85;
 
             // determine num of days in project, adding 1 for start date
             const numProjectDays =
-              countNumOfDays(project.startDate, project.endDate) + 1;
+              countNumOfDays(set[p].startDate, set[p].endDate) + 1;
 
             let proj = {};
 
             // iterate through each day in the project
-            for (let i = 0; i < numProjectDays; i++) {
+            for (let d = 0; d < numProjectDays; d++) {
               // get current project date
-              const date = new Date(project.startDate).getDate() + i;
+              const date = new Date(set[p].startDate).getDate() + d;
 
               // determine if the date matches the set's start or end date
               if (
-                (project.startDate === setStartDate && i === 0) ||
-                (project.endDate === setEndDate && i === numProjectDays - 1)
+                (set[p].startDate === setStartDate && d === 0) ||
+                (set[p].endDate === setEndDate && d === numProjectDays - 1)
               ) {
                 // set travel rate to project date
                 proj[date] = travelDayRate;
@@ -145,8 +148,30 @@
                 // set full rate to project date
                 proj[date] = fullDayRate;
               }
-            }
 
+              // if at beginning of proj && not at beginning of set
+              if (d === 0 && p !== 0) {
+                // determine if there is a gap behind
+                if (
+                  (date-1) !== new Date(set[p-1].endDate).getDate() &&
+                  (date) !== new Date(set[p-1].endDate).getDate() 
+                ) {
+                  proj[date-1] = travelDayRate;
+                }
+              }
+
+              // if at end of proj && not at end of set
+              if (d === numProjectDays-1 && p !== numProjects-1) {
+                // determine if there is a gap ahead
+                if (
+                  (date+1) !== new Date(set[p+1].startDate).getDate() &&
+                  (date) !== new Date(set[p+1].startDate).getDate()
+                ) {
+                  proj[date+1] = travelDayRate;
+                }
+
+              }
+            }
             // add project to projects array
             projects.push(proj);
           }
@@ -222,7 +247,7 @@
         console.log("-----");
         console.log(`Set 2: ${calculateReimbursement(set2)}`);
         console.log('-----');
-        // console.log(`Set 3: ${calculateReimbursement(set3)}`);
+        console.log(`Set 3: ${calculateReimbursement(set3)}`);
         // console.log('-----');
         // console.log(`Set 4: ${calculateReimbursement(set4)}`);
       })();
