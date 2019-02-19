@@ -75,71 +75,115 @@
           // no projects exist in the set
           if (!numProjects) return 0;
 
-          // set inital dates to start/end date of first project in set
-          let setStartDate = set[0].startDate;
-          let setEndDate = set[0].endDate;
-
-          // only 1 project exists in the set
+          // only one project exists in the set
           if (numProjects === 1) {
             // set project rates
             const travelDayRate = set[0].cityCost === "low" ? 45 : 55;
             const fullDayRate = set[0].cityCost === "low" ? 75 : 85;
 
             // return single-day travel rate, if start & end dates match
-            if (setStartDate === setEndDate) return travelDayRate;
+            if (set[0].startDate === set[0].endDate) return travelDayRate;
 
             // determine num of full days, subtracting 1 for end date
-            const numOfFullDays = countNumOfDays(setStartDate, setEndDate) - 1;
+            const numOfFullDays = countNumOfDays(set[0].startDate, set[0].endDate) - 1;
 
             // return single-project reimbursement
             return travelDayRate * 2 + fullDayRate * numOfFullDays;
           }
 
-          // find set's start date & end date
+          // get dates & rates for each project in the set
+          const projects = getProjectDatesAndRates(set);
+
+          // get rate for each date in the set
+          const dates = getSetDatesAndRates(projects);
+
+          // get reimbursement total for the set
+          const reimbursement = getReimbursementTotal(dates);
+
+          // return set's reimbursement total
+          return reimbursement;
+        }
+
+        function getProjectDatesAndRates(set) {
+          let projects = [];
+
+          // set inital dates to dates of first project in set
+          let setStartDate = set[0].startDate;
+          let setEndDate = set[0].endDate;
+
+          // determine start date & end date of set
           for (const project of set) {
-            setStartDate = startDateComparison(project.startDate, setStartDate);
-            setEndDate = endDateComparison(project.endDate, setEndDate);
+            setStartDate = compareDates(project.startDate, setStartDate, '<');
+            setEndDate = compareDates(project.endDate, setEndDate, '>');
           }
-          console.log(`setStartDate: ${setStartDate}`);
-          console.log(`setEndDate: ${setEndDate}`);
 
-          // determine num of days in set, adding 1 for start date
-          console.log(
-            `days in set: ${countNumOfDays(setStartDate, setEndDate) + 1}`
-          );
-
-          let reimbursementMatrix = [];
-
-          // for each project in the set
-          for (let i = 0; i < numProjects; i++) {
-            let reimbursement = [];
+          // iterate through each project in the set
+          for (const project of set) {
+            // set project rates
+            const travelDayRate = project.cityCost === "low" ? 45 : 55;
+            const fullDayRate = project.cityCost === "low" ? 75 : 85;
 
             // determine num of days in project, adding 1 for start date
             const numProjectDays =
-              countNumOfDays(set[i].startDate, set[i].endDate) + 1;
+              countNumOfDays(project.startDate, project.endDate) + 1;
 
-            // set project rates
-            const travelDayRate = set[i].cityCost === "low" ? 45 : 55;
-            const fullDayRate = set[i].cityCost === "low" ? 75 : 85;
+            let proj = {};
 
-            // for each day in the project
-            for (let j = 0; j < numProjectDays; j++) {
+            // iterate through each day in the project
+            for (let i = 0; i < numProjectDays; i++) {
+              // get current project date
+              const date = new Date(project.startDate).getDate() + i;
+
+              // determine if the date matches the set's start or end date
               if (
-                (set[i].startDate === setStartDate && j === 0) ||
-                (set[i].endDate === setEndDate && j === numProjectDays - 1)
+                (project.startDate === setStartDate && i === 0) ||
+                (project.endDate === setEndDate && i === numProjectDays - 1)
               ) {
-                // add travel rate
-                reimbursement[j] = travelDayRate;
+                // set travel rate to project date
+                proj[date] = travelDayRate;
               } else {
-                // add full day rate
-                reimbursement[j] = fullDayRate;
+                // set full rate to project date
+                proj[date] = fullDayRate;
               }
             }
-            console.log(reimbursement);
-            reimbursementMatrix[i] = reimbursement;
+
+            // add project to projects array
+            projects.push(proj);
           }
 
-          return reimbursementMatrix;
+          // return set of projects w/dates & rates
+          return projects;
+        }
+
+        function getSetDatesAndRates(projects) {
+          let dates = {};
+
+          // iterate through projects
+          projects.forEach(function(project) {
+            // get project dates & rates
+            const projectDatesAndRates = Object.entries(project);
+
+            // iterate through project dates
+            for (let [date, rate] of projectDatesAndRates) {
+              // determine if rate for date already exists
+              if (dates[date])
+                // compare rates & save highest
+                rate = dates[date] > rate ? dates[date] : rate;
+
+              // set rate for date
+              dates[date] = rate;
+            }
+          });
+
+          // return set of dates w/rates
+          return dates;
+        }
+
+        function getReimbursementTotal(dates) {
+          // get rates
+          const rates = Object.values(dates);
+          // return reimbursement total
+          return rates.reduce((total, rate) => total + rate);
         }
 
         function countNumOfDays(date1, date2) {
@@ -160,29 +204,24 @@
           return numOfDays;
         }
 
-        function startDateComparison(date1, date2) {
+        function compareDates(date1, date2, operator) {
           // convert dates to milliseconds
           const d1 = new Date(date1).getTime();
           const d2 = new Date(date2).getTime();
 
-          // return earlier date
-          return d1 < d2 ? date1 : date2;
-        }
+          // compare & return date
+          if (operator === '<')
+            return d1 < d2 ? date1 : date2;
 
-        function endDateComparison(date1, date2) {
-          // convert dates to milliseconds
-          const d1 = new Date(date1).getTime();
-          const d2 = new Date(date2).getTime();
-
-          // return later date
-          return d1 > d2 ? date1 : date2;
+          if (operator === '>')
+            return d1 > d2 ? date1 : date2;
         }
 
         console.log("-----");
         console.log(`Set 1: ${calculateReimbursement(set1)}`);
         console.log("-----");
         console.log(`Set 2: ${calculateReimbursement(set2)}`);
-        // console.log('-----');
+        console.log('-----');
         // console.log(`Set 3: ${calculateReimbursement(set3)}`);
         // console.log('-----');
         // console.log(`Set 4: ${calculateReimbursement(set4)}`);
