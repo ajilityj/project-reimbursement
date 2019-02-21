@@ -149,25 +149,27 @@
                 proj[date] = fullDayRate;
               }
 
-              // if at beginning of proj && not at beginning of set
-              if (d === 0 && p !== 0) {
-                // determine if there is a gap behind
+              // if at beginning of proj && not at beginning of set && not already a travel day
+              if (d === 0 && p !== 0 && proj[date] != travelDayRate) {
+                // determine if there is a gap behind the current proj date
                 if (
                   (date-1) !== new Date(set[p-1].endDate).getDate() &&
                   (date) !== new Date(set[p-1].endDate).getDate() 
                 ) {
-                  proj[date-1] = travelDayRate;
+                  // overwrite project date with the travel rate
+                  proj[date] = travelDayRate;
                 }
               }
 
-              // if at end of proj && not at end of set
-              if (d === numProjectDays-1 && p !== numProjects-1) {
-                // determine if there is a gap ahead
+              // if at end of proj && not at end of set && not already a travel day
+              if (d === numProjectDays-1 && p !== numProjects-1 && proj[date] != travelDayRate) {
+                // determine if there is a gap ahead of the current proj date
                 if (
                   (date+1) !== new Date(set[p+1].startDate).getDate() &&
                   (date) !== new Date(set[p+1].startDate).getDate()
                 ) {
-                  proj[date+1] = travelDayRate;
+                  // set travel rate to project date
+                  proj[date] = travelDayRate;
                 }
 
               }
