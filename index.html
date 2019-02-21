@@ -3,7 +3,9 @@
   <head> </head>
   <body>
     <script>
-      (function() {
+      {
+        "use strict";
+
         const set1 = [
           {
             cityCost: "low",
@@ -72,29 +74,13 @@
           // determine number of projects in set
           const numProjects = set.length;
 
-          // no projects exist in the set
+          // return 0, no projects exist in the set
           if (!numProjects) return 0;
-
-          // only one project exists in the set
-          if (numProjects === 1) {
-            // set project rates
-            const travelDayRate = set[0].cityCost === "low" ? 45 : 55;
-            const fullDayRate = set[0].cityCost === "low" ? 75 : 85;
-
-            // return single-day travel rate, if start & end dates match
-            if (set[0].startDate === set[0].endDate) return travelDayRate;
-
-            // determine num of full days, subtracting 1 for end date
-            const numOfFullDays = countNumOfDays(set[0].startDate, set[0].endDate) - 1;
-
-            // return single-project reimbursement
-            return travelDayRate * 2 + fullDayRate * numOfFullDays;
-          }
 
           // get dates & rates for each project in the set
           const projects = getProjectDatesAndRates(set);
 
-          // get rate for each date in the set
+          // get rate for each project date in the set
           const dates = getSetDatesAndRates(projects);
 
           // get reimbursement total for the set
@@ -116,10 +102,10 @@
 
           // determine start date & end date of set
           for (const project of set) {
-            setStartDate = compareDates(project.startDate, setStartDate, '<');
-            setEndDate = compareDates(project.endDate, setEndDate, '>');
+            setStartDate = compareDates(project.startDate, setStartDate, "<");
+            setEndDate = compareDates(project.endDate, setEndDate, ">");
           }
-          
+
           // iterate through each project in the set
           for (let p = 0; p < numProjects; p++) {
             // set project rates
@@ -150,11 +136,15 @@
               }
 
               // if at beginning of proj && not at beginning of set && not already a travel day
-              if (d === 0 && p !== 0 && proj[date] != travelDayRate) {
+              if (
+                d === 0 && 
+                p !== 0 && 
+                proj[date] != travelDayRate
+              ) {
                 // determine if there is a gap behind the current proj date
                 if (
-                  (date-1) !== new Date(set[p-1].endDate).getDate() &&
-                  (date) !== new Date(set[p-1].endDate).getDate() 
+                  (date - 1) !== new Date(set[p - 1].endDate).getDate() &&
+                  date !== new Date(set[p - 1].endDate).getDate()
                 ) {
                   // overwrite project date with the travel rate
                   proj[date] = travelDayRate;
@@ -162,16 +152,19 @@
               }
 
               // if at end of proj && not at end of set && not already a travel day
-              if (d === numProjectDays-1 && p !== numProjects-1 && proj[date] != travelDayRate) {
+              if (
+                d === numProjectDays - 1 &&
+                p !== numProjects - 1 &&
+                proj[date] != travelDayRate
+              ) {
                 // determine if there is a gap ahead of the current proj date
                 if (
-                  (date+1) !== new Date(set[p+1].startDate).getDate() &&
-                  (date) !== new Date(set[p+1].startDate).getDate()
+                  date + 1 !== new Date(set[p + 1].startDate).getDate() &&
+                  date !== new Date(set[p + 1].startDate).getDate()
                 ) {
                   // set travel rate to project date
                   proj[date] = travelDayRate;
                 }
-
               }
             }
             // add project to projects array
@@ -236,23 +229,18 @@
           const d1 = new Date(date1).getTime();
           const d2 = new Date(date2).getTime();
 
-          // compare & return date
-          if (operator === '<')
-            return d1 < d2 ? date1 : date2;
+          // compare milliseconds & return earlier date
+          if (operator === "<") return d1 < d2 ? date1 : date2;
 
-          if (operator === '>')
-            return d1 > d2 ? date1 : date2;
+          // compare milliseconds & return later date
+          if (operator === ">") return d1 > d2 ? date1 : date2;
         }
 
-        console.log("-----");
         console.log(`Set 1: ${calculateReimbursement(set1)}`);
-        console.log("-----");
         console.log(`Set 2: ${calculateReimbursement(set2)}`);
-        console.log('-----');
         console.log(`Set 3: ${calculateReimbursement(set3)}`);
-        // console.log('-----');
-        // console.log(`Set 4: ${calculateReimbursement(set4)}`);
-      })();
+        console.log(`Set 4: ${calculateReimbursement(set4)}`);
+      }
     </script>
   </body>
 </html>
