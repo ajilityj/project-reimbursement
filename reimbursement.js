@@ -97,8 +97,8 @@
 
       // determine start date & end date of set
       for (const project of set) {
-        setStartDate = compareDates(project.startDate, setStartDate, "<");
-        setEndDate = compareDates(project.endDate, setEndDate, ">");
+        setStartDate = getEarliestDate(project.startDate, setStartDate);
+        setEndDate = getLatestDate(project.endDate, setEndDate);
       }
 
       // iterate through each project in the set
@@ -219,16 +219,22 @@
       return numOfDays;
     }
 
-    function compareDates(date1, date2, operator) {
+    function getEarliestDate(date1, date2) {
       // convert dates to milliseconds
       const d1 = new Date(date1).getTime();
       const d2 = new Date(date2).getTime();
 
       // compare milliseconds & return earlier date
-      if (operator === "<") return d1 < d2 ? date1 : date2;
+      return d1 < d2 ? date1 : date2;
+    }
+
+    function getLatestDate(date1, date2) {
+      // convert dates to milliseconds
+      const d1 = new Date(date1).getTime();
+      const d2 = new Date(date2).getTime();
 
       // compare milliseconds & return later date
-      if (operator === ">") return d1 > d2 ? date1 : date2;
+      return d1 > d2 ? date1 : date2;
     }
 
     console.log(`Set 1: ${calculateReimbursement(set1)}`);
